@@ -1,2 +1,13 @@
 
 *.jar
+*.txt
+*.tagger
+Jar/FilipinoStanfordPOSTagger-master/README.md
+Jar/stanford-postagger-2018-02-27/build.xml
+*.props
+Jar/stanford-postagger-2018-02-27/stanford-postagger-gui.bat
+Jar/stanford-postagger-2018-02-27/stanford-postagger-gui.sh
+Jar/stanford-postagger-2018-02-27/stanford-postagger.bat
+Jar/stanford-postagger-2018-02-27/stanford-postagger.sh
+*.java
+*.class
