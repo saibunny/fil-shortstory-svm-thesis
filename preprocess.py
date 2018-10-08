@@ -15,7 +15,6 @@ from senticnettest import SenticValuer
 ##ACTUAL CODE
 
 ##FUNCTION DEFINITIONS
-##INSERT FILE READING HERE
 def loadDataset(filename):
     with open(filename) as csvfile:
         lines = csv.reader(csvfile)
@@ -28,6 +27,16 @@ def printDataset(dataset):
 def printDataset0(dataset):
     for row in dataset:
         print(row[0])
+
+def loadTagset(filename):
+    loaded = []
+    tagset = []
+    with open(filename) as csvfile:
+        lines = csv.reader(csvfile)
+        loaded = list(lines)
+    for tag in loaded:
+        tagset.append(tag[0])
+    return tagset
 ##/FUNCTION DEFINITIONS
 
 ##IMPORT EXAMPLES
@@ -60,7 +69,7 @@ print(translator.translateWord(word))
 ##/IMPORT EXAMPLES
 
 #MAIN
-dataset = loadDataset("C:\\Users\\kendrick\\Desktop\\sample.csv")
+dataset = loadDataset("data\\sample.csv")
 #dataset looks like [sentence, emotion]
 
 tagger = POSTagger()
@@ -79,13 +88,23 @@ for row in dataset:
     for i in range(len(row[0])):
         row[0][i] = row[0][i].split("|")
 
-printDataset(dataset)
 #dataset looks like [ [ [word,POStag]*], emotion]
 #3D array na ito
 
 #I think ang gusto kong gawin is gawin munang words ang mga
 # tags para madali tanggalin for stopword removal and POSfiltering
+tagset = loadTagset("data\\tags.csv")
+
+print(printDataset(dataset))
+print('AFTER')
+
+for row in dataset:
+    temp = []
+    for wordtag in row[0]:
+        if wordtag[1] in tagset:
+            temp.append(wordtag)
+    row[0] = [word for word in row[0] if word not in temp]
 
 
-
+print(printDataset(dataset))
 #/MAIN
