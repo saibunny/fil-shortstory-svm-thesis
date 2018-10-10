@@ -1,11 +1,11 @@
 from py4j.java_gateway import JavaGateway
-gateway = JavaGateway()
-
-tagger = gateway.entry_point.getPost()
-
-
-sentence = "Si Gng. Puff ay nasa klase."
-print(tagger.tagPOS(sentence))
+# gateway = JavaGateway()
+#
+# tagger = gateway.entry_point.getPost()
+#
+#
+# sentence = "Si Gng. Puff ay nasa klase."
+# print(tagger.tagPOS(sentence))
 
 
 
