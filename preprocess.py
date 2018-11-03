@@ -11,6 +11,8 @@ from yandextranslatetest import Translator
 #import for sentic value tagger
 from senticnettest import SenticValuer
 
+#import for english lemmatizer
+from spacy.lang.en import English
 
 ##ACTUAL CODE
 
@@ -56,7 +58,6 @@ translator = Translator()
 print(translator.translateWord(word))
 ##/TRANSLATOR PART##
 """
-##INSERT LEMMATIZATION PART HERE
 
 # ##SENTIC VALUE TAGGER PART##
 # translatedword = 'stupid'
@@ -91,12 +92,8 @@ for row in dataset:
 #dataset looks like [ [ [word,POStag]*], emotion]
 #3D array na ito
 
-#I think ang gusto kong gawin is gawin munang words ang mga
-# tags para madali tanggalin for stopword removal and POSfiltering
-tagset = loadTagset("data\\tags.csv")
 
-print(printDataset(dataset))
-print('AFTER')
+tagset = loadTagset("data\\tags.csv")
 
 for row in dataset:
     temp = []
@@ -105,6 +102,53 @@ for row in dataset:
             temp.append(wordtag)
     row[0] = [word for word in row[0] if word not in temp]
 
+#dataset still looks like the one from earlier except no more stop words
 
-print(printDataset(dataset))
+for row in dataset:
+    for i in range(len(row[0])):
+        row[0][i] = row[0][i][0].lower()
+
+printDataset(dataset)
+#dataset now looks like [ [word]*, emotion] and capitalizations are eliminated.
+
+translator = Translator()
+
+for row in dataset:
+    for i in range(len(row[0])):
+        row[0][i] = translator.translateWord(row[0][i])
+
+#dataset still looks like the one from before except translated to english
+
+#next is lemmatizer
+nlp = English()
+for row in dataset:
+    if row[0]:
+        for i in range(len(row[0])):
+            doc = nlp(row[0][i])
+            row[0][i] = doc[0].lemma_
+
+#dataset still looks like the one from before
+
+print("BEFORE:")
+printDataset(dataset)
+
+#next up is senticnet and keep in mind the blank
+# resulting row[0] make the sentic value for that all 0's
+sentic = SenticValuer()
+
+for row in dataset:
+    if row[0]:
+        for i in range(len(row[0])):
+            row[0][i] = sentic.getSentics(row[0][i])
+    else:
+            row[0] = [0.0, 0.0, 0.0, 0.0, 0.0]
+
+print("AFTER:")
+printDataset(dataset)
+
+#the dataset now looks like [ [sentic values]*, emotion]
+
+#feature selection I think?
+
+#then average
 #/MAIN

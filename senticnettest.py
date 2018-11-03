@@ -3,7 +3,7 @@ from senticnet.senticnet import SenticNet
 
 class SenticValuer:
     def getSentics(self, word):
-        senticsAndItensity = ""
+        senticsAndItensity = []
         sn = SenticNet('en')
         try:
             sentics = sn.sentics(word)
@@ -15,16 +15,17 @@ class SenticValuer:
             # print(sentics['aptitude'])
             # print(polarity_intensity)
 
-            senticsAndItensity = senticsAndItensity + sentics['pleasantness'] + ', ' \
-                                 + sentics['attention'] + ', ' \
-                                 + sentics['sensitivity'] + ', ' \
-                                 + sentics['aptitude'] + ', '\
-                                 + polarity_intensity
+            senticsAndItensity.append(float(sentics['pleasantness']))
+            senticsAndItensity.append(float(sentics['attention']))
+            senticsAndItensity.append(float(sentics['sensitivity']))
+            senticsAndItensity.append(float(sentics['aptitude']))
+            senticsAndItensity.append(float(polarity_intensity))
 
             return senticsAndItensity
 
         except Exception as e:
-            print(word + " does not exist")
+            defaultsentics = [0.0, 0.0, 0.0, 0.0, 0.0]
+            return defaultsentics
 
 
 
