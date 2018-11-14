@@ -4,7 +4,7 @@ from py4j.java_gateway import JavaGateway
 # tagger = gateway.entry_point.getPost()
 #
 #
-# sentence = "Si Gng. Puff ay nasa klase."
+# sentence = "Dr. Nino"
 # print(tagger.tagPOS(sentence))
 
 

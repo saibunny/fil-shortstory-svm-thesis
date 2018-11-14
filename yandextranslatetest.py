@@ -33,4 +33,4 @@ class Translator:
                                     "&lang=tl-en") as url:
             data = json.loads(url.read().decode())
             translated = "".join(data['text'])
-            return translated
+            return translated.lower()

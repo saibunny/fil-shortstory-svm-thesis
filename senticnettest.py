@@ -31,4 +31,4 @@ class SenticValuer:
 
 # ##TESTING AREA
 # yas = SenticValuer()
-# print(yas.getSentics("believe"))
+# print(yas.getSentics("awkward"))
