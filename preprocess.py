@@ -54,7 +54,6 @@ def findAffective(phrase):
     affective = ''
     highpolarity = 0.0
     words = phrase.split(" ")
-    print(words)
     for i in range(len(words)):
         onlychars = re.sub(r'\W+', '', words[i])
         if not onlychars.isalpha():
@@ -109,9 +108,12 @@ def onetosix(dataset):
 
 
 #MAIN
-batchnum = 37
+batchnum = 12
 # inputdirectory = "data\\validset_batch" + str(batchnum)
-inputdirectory = "data\\sample"
+# inputdirectory = "data\\sample"
+inputdirectory = "data\\testsetpred_batch" + str(batchnum)
+
+print(inputdirectory)
 dataset = loadDataset(inputdirectory + ".csv")
 #dataset looks like [sentence, emotion]
 
@@ -156,6 +158,7 @@ for row in dataset:
 #dataset still looks like the one from earlier except retain most affective POS
 print("end stopword removal")
 
+
 printDataset(dataset)
 
 print("start foreclipping")
@@ -164,18 +167,20 @@ for row in dataset:
     for i in range(len(row[0])):
         if "-" in row[0][i][0] and row[0][i][1] is not "FW":
             tempword = row[0][i][0].split("-")
+
+            while "" in tempword:
+                tempword.remove("")
+
             temptag = []
             for j in range(len(tempword)):
-                temptag.append(tagger.returnTag(tempword[j]))
-                if temptag[j] not in tagset:
-                    tempwordtag = []
-                    tempwordtag.append(tempword[j])
-                    tempwordtag.append(temptag[j])
-                    row[0][i] = tempwordtag
+                if tempword[j] is not '':
+                    temptag.append(tagger.returnTag(tempword[j]))
+                    if temptag[j] not in tagset:
+                        tempwordtag = []
+                        tempwordtag.append(tempword[j])
+                        tempwordtag.append(temptag[j])
+                        row[0][i] = tempwordtag
 print("end foreclipping")
-
-printDataset(dataset)
-
 
 print("start filtering POS")
 
@@ -204,15 +209,26 @@ print("end replacing [word|tag] list by word")
 print("Start translation")
 translator = Translator()
 
+translations = []
+
 count = 0
 for row in dataset:
-    untransrow = ""
-    transrow = ""
+    untransrow = "<"
+    transrow = ">"
+
+    temptransrow = []
+
     for i in range(len(row[0])):
         untransrow = untransrow + "|" + row[0][i]
         temmie = translator.translateWord(row[0][i])
         transrow = transrow + "|" + temmie
         row[0][i] = temmie
+
+    temptransrow.append(untransrow)
+    temptransrow.append(transrow)
+
+    translations.append(temptransrow)
+
     count = count + 1
     print(str(count) + " " + untransrow + "|||||" + transrow)
 print("End translation")
@@ -266,14 +282,26 @@ for i in range(len(sixSets)):
 
     finalDataset = []
 
-    for row in sixSets[i]:
+    # for row in sixSets[i]:
+    #     newRow = []
+    #     newRow.append(row[0][0])
+    #     newRow.append(row[0][1])
+    #     newRow.append(row[0][2])
+    #     newRow.append(row[0][3])
+    #     newRow.append(row[0][4])
+    #     newRow.append(row[1])
+    #     finalDataset.append(newRow)
+
+    for j in range(len(sixSets[i])):
         newRow = []
-        newRow.append(row[0][0])
-        newRow.append(row[0][1])
-        newRow.append(row[0][2])
-        newRow.append(row[0][3])
-        newRow.append(row[0][4])
-        newRow.append(row[1])
+        newRow.append(sixSets[i][j][0][0])
+        newRow.append(sixSets[i][j][0][1])
+        newRow.append(sixSets[i][j][0][2])
+        newRow.append(sixSets[i][j][0][3])
+        newRow.append(sixSets[i][j][0][4])
+        newRow.append(sixSets[i][j][1])
+        newRow.append(translations[j][0])
+        newRow.append(translations[j][1])
         finalDataset.append(newRow)
 
     with open(directory,'w', newline='') as csvfile:
