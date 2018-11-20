@@ -110,8 +110,8 @@ def onetosix(dataset):
 
 #MAIN
 batchnum = 37
-inputdirectory = "data\\validset_batch" + str(batchnum)
-# inputdirectory = "data\\sample"
+# inputdirectory = "data\\validset_batch" + str(batchnum)
+inputdirectory = "data\\sample"
 dataset = loadDataset(inputdirectory + ".csv")
 #dataset looks like [sentence, emotion]
 
@@ -142,8 +142,22 @@ for row in dataset:
 #3D array na ito
 print("end splitting words and tags")
 
+printDataset(dataset)
+print("start stopword removal")
+stopwordset = loadTagset("data\\stopwords.csv")
 
-print("start removing stopwords")
+for row in dataset:
+    temp = []
+    for wordtag in row[0]:
+        # temp = [word for word in wordtag[1] if word in tagset]
+        if wordtag[0] in stopwordset:
+            temp.append(wordtag)
+    row[0] = [word for word in row[0] if word not in temp]
+#dataset still looks like the one from earlier except retain most affective POS
+print("end stopword removal")
+printDataset(dataset)
+
+print("start filtering POS")
 tagset = loadTagset("data\\tagstop5.csv")
 
 for row in dataset:
@@ -153,8 +167,8 @@ for row in dataset:
         if wordtag[1] in tagset:
             temp.append(wordtag)
     row[0] = [word for word in row[0] if word not in temp]
-#dataset still looks like the one from earlier except no more stop words
-print("end removing stopwords")
+#dataset still looks like the one from earlier except retain most affective POS
+print("end filtering POS")
 
 
 print("start replacing [word|tag] list by word")
