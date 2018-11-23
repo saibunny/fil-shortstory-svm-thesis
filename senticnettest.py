@@ -1,5 +1,4 @@
 from senticnet.senticnet import SenticNet
-##NOTE TO SELF YOU STILL HAVE TO FIX THE EXCEPTION HERE
 
 class SenticValuer:
     def getSentics(self, word):
@@ -8,12 +7,6 @@ class SenticValuer:
         try:
             sentics = sn.sentics(word)
             polarity_intensity = sn.polarity_intense(word)
-            # print(sentics)
-            # print(sentics['pleasantness'])
-            # print(sentics['attention'])
-            # print(sentics['sensitivity'])
-            # print(sentics['aptitude'])
-            # print(polarity_intensity)
 
             senticsAndItensity.append(float(sentics['pleasantness']))
             senticsAndItensity.append(float(sentics['attention']))
@@ -26,9 +19,3 @@ class SenticValuer:
         except Exception as e:
             defaultsentics = [0.0, 0.0, 0.0, 0.0, 0.0]
             return defaultsentics
-
-
-
-# ##TESTING AREA
-# yas = SenticValuer()
-# print(yas.getSentics("awkward"))

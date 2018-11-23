@@ -1,24 +1,9 @@
-#import for csv
 import csv
-
-#import for tagger
 from py4jTest import POSTagger
-
-#import for translator
 from yandextranslatetest import Translator
-
-#import for sentic value tagger
 from senticnettest import SenticValuer
-
-#import for english lemmatizer
 from spacy.lang.en import English
-
-#import for sorting
-from operator import itemgetter
-
 import re
-
-##ACTUAL CODE
 
 ##FUNCTION DEFINITIONS
 def loadDataset(filename):
@@ -38,22 +23,23 @@ def printDataset0(dataset):
 def loadTagset(filename):
     tagset = open(filename, 'r').read().split('\n')
     return tagset
-    # loaded = []
-    # tagset = []
-    # with open(filename) as csvfile:
-    #     lines = csv.reader(csvfile)
-    #     loaded = list(lines)
-    # for tag in loaded:
-    #     tagset.append(tag[0])
-    # return tagset
+
+def checkNeg(row):
+    for i in range(len(row[0])):
+        if i != 0:
+            prev = i-1
+            if "hindi" in row[0][prev][0].lower() or "wala" in row[0][prev][0].lower():
+                row[0][i].append("NEG")
+    return row
 
 def findAffective(phrase):
     nlp = English()
     sentic = SenticValuer()
 
+    affectiveP = []
     affective = ''
     highpolarity = 0.0
-    words = phrase.split(" ")
+    words = phrase[0].split(" ")
     for i in range(len(words)):
         onlychars = re.sub(r'\W+', '', words[i])
         if not onlychars.isalpha():
@@ -64,9 +50,15 @@ def findAffective(phrase):
         if abs(senticVal[4]) >= highpolarity:
             affective = words[i]
             highpolarity = senticVal[4]
+    affectiveP.append(affective)
+    affectiveP.append(phrase[1])
+    return affectiveP
 
-    return affective
+def negate(senticvals):
+    for i in range(len(senticvals)):
+        senticvals[i] = senticvals[i] * -1
 
+    return senticvals
 
 def averageSenticValues(row):
     sum = [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -103,19 +95,16 @@ def onetosix(dataset):
         sixSets.append(tempDataset)
 
     return sixSets
-
 ##/FUNCTION DEFINITIONS
 
 
 #MAIN
-batchnum = 12
+batchnum = 1
 # inputdirectory = "data\\validset_batch" + str(batchnum)
-# inputdirectory = "data\\sample"
-inputdirectory = "data\\testsetpred_batch" + str(batchnum)
+inputdirectory = "data\\validset_withnegation_batch" + str(batchnum)
 
 print(inputdirectory)
 dataset = loadDataset(inputdirectory + ".csv")
-#dataset looks like [sentence, emotion]
 
 print("dataset loaded")
 
@@ -125,25 +114,23 @@ print("start tagging")
 for row in dataset:
     row[0] = tagger.tagSentence(row[0])[:-1]
     # row[0] = row[0][:-1]
-#row in dataset looks like [sentence with POStag, emotion]
 print("end tagging")
 
 print("start splitting by space")
 for row in dataset:
     row[0] = row[0].split(" ")
-#row in dataset looks like [ [word|POStag*], emotion]
-#dapat + pero kleen star na lang. meaning there is more than 1 word per row
-#an array within an array
 print("end splitting by space")
 
 print("start splitting words and tags")
 for row in dataset:
     for i in range(len(row[0])):
         row[0][i] = row[0][i].split("|")
-#dataset looks like [ [ [word,POStag]*], emotion]
-#3D array na ito
 print("end splitting words and tags")
 
+print("start finding negation")
+for i in range(len(dataset)):
+    dataset[i] = checkNeg(dataset[i])
+print("end finding negation")
 
 print("start stopword removal")
 stopwordset = loadTagset("data\\stopwords.csv")
@@ -151,15 +138,10 @@ stopwordset = loadTagset("data\\stopwords.csv")
 for row in dataset:
     temp = []
     for wordtag in row[0]:
-        # temp = [word for word in wordtag[1] if word in tagset]
         if wordtag[0] in stopwordset:
             temp.append(wordtag)
     row[0] = [word for word in row[0] if word not in temp]
-#dataset still looks like the one from earlier except retain most affective POS
 print("end stopword removal")
-
-
-printDataset(dataset)
 
 print("start foreclipping")
 tagset = loadTagset("data\\tagstop5.csv")
@@ -187,24 +169,16 @@ print("start filtering POS")
 for row in dataset:
     temp = []
     for wordtag in row[0]:
-        # temp = [word for word in wordtag[1] if word in tagset]
         if wordtag[1] in tagset:
             temp.append(wordtag)
     row[0] = [word for word in row[0] if word not in temp]
-#dataset still looks like the one from earlier except retain most affective POS
 print("end filtering POS")
 
-
-print("start replacing [word|tag] list by word")
-
+print("start removing POStag")
 for row in dataset:
     for i in range(len(row[0])):
-        row[0][i] = row[0][i][0]
-# dataset = [[j.lower() for j in i] for i in dataset]
-
-#dataset now looks like [ [word]*, emotion]
-print("end replacing [word|tag] list by word")
-
+        row[0][i].pop(1)
+print("end removing POStag")
 
 print("Start translation")
 translator = Translator()
@@ -219,10 +193,10 @@ for row in dataset:
     temptransrow = []
 
     for i in range(len(row[0])):
-        untransrow = untransrow + "|" + row[0][i]
-        temmie = translator.translateWord(row[0][i])
+        untransrow = untransrow + "|" + row[0][i][0]
+        temmie = translator.translateWord(row[0][i][0])
         transrow = transrow + "|" + temmie
-        row[0][i] = temmie
+        row[0][i][0] = temmie
 
     temptransrow.append(untransrow)
     temptransrow.append(transrow)
@@ -232,38 +206,37 @@ for row in dataset:
     count = count + 1
     print(str(count) + " " + untransrow + "|||||" + transrow)
 print("End translation")
-#dataset still looks like the one from before except translated to english
 
 print("Start lemmatization")
-#next is lemmatizer
 nlp = English()
 for row in dataset:
     if row[0]:
         for i in range(len(row[0])):
             if " " in row[0][i]:
-                row[0][i] = findAffective(row[0][i])
+                row[0][i][0] = findAffective(row[0][i])
             else:
-                doc = nlp(row[0][i])
-                row[0][i] = doc[0].lemma_
-
-#dataset still looks like the one from before but lemmatized
+                doc = nlp(row[0][i][0])
+                row[0][i][0] = doc[0].lemma_
 print("end lemmatization")
 
 print("start sentic valuing")
-#next up is senticnet and keep in mind the blank resulting row[0] make the sentic value for that all 0's
 sentic = SenticValuer()
 
 for row in dataset:
     if row[0]:
         for i in range(len(row[0])):
-            row[0][i] = sentic.getSentics(row[0][i])
+            row[0][i][0] = sentic.getSentics(row[0][i][0])
+            if len(row[0][i]) == 2:
+                row[0][i][0] = negate(row[0][i][0])
     else:
-            row[0] = [[0.0, 0.0, 0.0, 0.0, 0.0]]
-#the dataset now looks like [ [sentic values]*, emotion]
+            row[0] = [[[0.0, 0.0, 0.0, 0.0, 0.0]]]
 print("end sentic valuing")
 
-
-printDataset(dataset)
+print("start retaining sentic values and polarity")
+for row in dataset:
+    for i in range(len(row[0])):
+        row[0][i] = row[0][i][0]
+print("end retaining sentic values and polarity")
 
 print("start averaging")
 
@@ -275,22 +248,11 @@ print("end averaging")
 
 print("start writing to file")
 
-#Write dataset to file
 for i in range(len(sixSets)):
     count = i+1
     directory = inputdirectory + "_processed_wordcount" + str(count) + '.csv'
 
     finalDataset = []
-
-    # for row in sixSets[i]:
-    #     newRow = []
-    #     newRow.append(row[0][0])
-    #     newRow.append(row[0][1])
-    #     newRow.append(row[0][2])
-    #     newRow.append(row[0][3])
-    #     newRow.append(row[0][4])
-    #     newRow.append(row[1])
-    #     finalDataset.append(newRow)
 
     for j in range(len(sixSets[i])):
         newRow = []
