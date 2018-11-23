@@ -57,7 +57,6 @@ def findAffective(phrase):
 def negate(senticvals):
     for i in range(len(senticvals)):
         senticvals[i] = senticvals[i] * -1
-
     return senticvals
 
 def averageSenticValues(row):
@@ -212,7 +211,7 @@ nlp = English()
 for row in dataset:
     if row[0]:
         for i in range(len(row[0])):
-            if " " in row[0][i]:
+            if " " in row[0][i][0]:
                 row[0][i][0] = findAffective(row[0][i])
             else:
                 doc = nlp(row[0][i][0])

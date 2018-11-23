@@ -1,4 +1,5 @@
 from py4j.java_gateway import JavaGateway
+import re
 
 class POSTagger:
     def __init__(self):
@@ -11,4 +12,4 @@ class POSTagger:
     def returnTag(self, word):
         word = self.tagger.tagPOS(word)
         wordtag = word.split("|")
-        return wordtag[1]
+        return re.sub('[^a-zA-Z0-9\-]', '', wordtag[1])
