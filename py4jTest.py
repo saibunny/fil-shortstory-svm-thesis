@@ -1,4 +1,5 @@
 from py4j.java_gateway import JavaGateway
+
 class POSTagger:
     def __init__(self):
         self.gateway = JavaGateway()
