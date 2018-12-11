@@ -1,7 +1,7 @@
 import re
-from py4jTest import POSTagger
-from yandextranslatetest import Translator
-from senticnettest import SenticValuer
+from taggerPy4j import POSTagger
+from translator import Translator
+from senticvaluer import SenticValuer
 from spacy.lang.en import English
 from sklearn.externals import joblib
 import numpy as np 
@@ -232,7 +232,8 @@ inputwords = averageSenticValues(inputwords)
 
 def generate_prediction(input):
     # loads the svm model
-    model = joblib.load('final_model_70.pkl')
+    modelfilename = "final_model_70.pkl"
+    model = joblib.load(modelfilename)
     prediction = model.predict(input)
     return prediction
 
