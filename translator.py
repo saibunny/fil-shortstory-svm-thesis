@@ -2,7 +2,7 @@ import json, urllib.request
 
 class Translator:
     def __init__(self):
-        self.key = "trnsl.1.1.20180821T035101Z.7622bc974ead6403.f3016199d1f56c33e68de316b816750e09daae43"
+        self.key = ""
 
     def translateWord(self, word):
         for i in range(10):

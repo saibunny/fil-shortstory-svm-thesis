@@ -1,7 +1,7 @@
 import csv
-from py4jTest import POSTagger
-from yandextranslatetest import Translator
-from senticnettest import SenticValuer
+from taggerPy4j import POSTagger
+from translator import Translator
+from senticvaluer import SenticValuer
 from spacy.lang.en import English
 import re
 
