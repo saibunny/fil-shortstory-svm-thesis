@@ -51,7 +51,8 @@ def findAffective(phrase):
             affective = words[i]
             highpolarity = senticVal[4]
     affectiveP.append(affective)
-    affectiveP.append(phrase[1])
+    if len(phrase) == 2:
+        affectiveP.append(phrase[1])
     return affectiveP
 
 def negate(senticvals):
@@ -98,14 +99,42 @@ def onetosix(dataset):
 
 
 #MAIN
-batchnum = 1
-# inputdirectory = "data\\validset_batch" + str(batchnum)
-inputdirectory = "data\\validset_withnegation_batch" + str(batchnum)
+filename = "validset_withnegation"
+
+inputdirectory = "data\\" + filename
 
 print(inputdirectory)
 dataset = loadDataset(inputdirectory + ".csv")
-
 print("dataset loaded")
+
+print("start replace apostrophe stuff")
+for i in range(len(dataset)):
+    dataset[i][0] = dataset[i][0].replace("nguni’t", "ngunit")
+    dataset[i][0] = dataset[i][0].replace("subali’t", "subalit")
+    dataset[i][0] = dataset[i][0].replace("pagka’t", "pagkat")
+    dataset[i][0] = dataset[i][0].replace("datapuwa’t", "datapuwat")
+    dataset[i][0] = dataset[i][0].replace("kahi’t", "kahit")
+    dataset[i][0] = dataset[i][0].replace("bagama’t", "bagamat")
+    dataset[i][0] = dataset[i][0].replace("isa't", "isat")
+    dataset[i][0] = dataset[i][0].replace("’to", "ito")
+    dataset[i][0] = dataset[i][0].replace("n’ya", "niya")
+    dataset[i][0] = dataset[i][0].replace("s’ya", "siya")
+    dataset[i][0] = dataset[i][0].replace("sa’yo", "sa iyo")
+    dataset[i][0] = dataset[i][0].replace("sa’kin", "sa akin")
+    dataset[i][0] = dataset[i][0].replace("sa’tin", "sa atin")
+    dataset[i][0] = dataset[i][0].replace("sa’min", "sa amin")
+    dataset[i][0] = dataset[i][0].replace("’t", " at")
+    dataset[i][0] = dataset[i][0].replace("’y", " ay")
+print("end replace apostrophe stuff")
+
+printDataset(dataset)
+
+print("start remove special chars")
+for i in range(len(dataset)):
+    dataset[i][0] = re.sub('[^ a-zA-Z0-9\-]', '', dataset[i][0])
+print("end remove special chars")
+
+printDataset(dataset)
 
 tagger = POSTagger()
 
@@ -237,6 +266,20 @@ for row in dataset:
         row[0][i] = row[0][i][0]
 print("end retaining sentic values and polarity")
 
+print("start removing blanks")
+for i in range(len(dataset)):
+    while [0.0, 0.0, 0.0, 0.0, 0.0] in dataset[i][0]:
+        dataset[i][0].remove([0.0, 0.0, 0.0, 0.0, 0.0])
+
+print("end removing blanks")
+
+print("start refill with 0")
+for i in range(len(dataset)):
+    if not dataset[i][0]:
+        dataset[i][0] = [[0.0, 0.0, 0.0, 0.0, 0.0]]
+
+print("end refill with 0")
+
 print("start averaging")
 
 sixSets = onetosix(dataset)
@@ -265,11 +308,10 @@ for i in range(len(sixSets)):
         newRow.append(translations[j][1])
         finalDataset.append(newRow)
 
-    with open(directory,'w', newline='') as csvfile:
+    with open(directory, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(finalDataset)
 
 print("end writing to file")
 
-print("complete batch #" + str(batchnum))
 #/MAIN
